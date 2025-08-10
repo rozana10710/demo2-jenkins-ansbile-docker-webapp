@@ -1,0 +1,63 @@
+---
+- name: Build and push Docker image, commit to GitHub
+  hosts: localhost
+  become: yes
+  become_method: sudo
+  become_user: ubuntu
+  vars:
+    docker_image_name: simple-web
+    docker_tag: latest
+    github_repo: git@github.com:rozana10710/demo2-jenkins-ansbile-docker-webapp.git
+    project_dir: /home/ubuntu
+    repo_dir: "/home/ubuntu/demo2-jenkins-ansbile-docker-webapp"
+
+  tasks:
+    - name: Ensure git is installed
+      become: yes
+      become_user: root
+      apt:
+        name: git
+        state: present
+        update_cache: yes
+
+    - name: Clone repository
+      git:
+        repo: "{{ github_repo }}"
+        dest: "{{ repo_dir }}"
+        version: main
+        force: yes
+        accept_hostkey: yes
+
+    - name: Ensure current user is in docker group
+      become: yes
+      become_user: root
+      user:
+        name: "{{ ansible_user | default('ubuntu') }}"
+        groups: docker
+        append: yes
+
+    - name: Build Docker image from docker/ directory
+      command: >-
+        docker build -t {{ docker_image_name }}:{{ docker_tag }} .
+      args:
+        chdir: "{{ repo_dir }}/docker"
+
+    - name: Tag Docker image (idempotent)
+      command: docker tag {{ docker_image_name }}:{{ docker_tag }} {{ docker_image_name }}:{{ docker_tag }}
+      changed_when: false
+
+    - name: Add all files to git
+      command: git add .
+      args:
+        chdir: "{{ repo_dir }}"
+
+    - name: Commit changes to git
+      command: git commit -m "Automated commit by Ansible at {{ ansible_date_time.iso8601 }}"
+      args:
+        chdir: "{{ repo_dir }}"
+      ignore_errors: yes  # skip if no changes
+
+    - name: Push to GitHub
+      command: git push origin main
+      args:
+        chdir: "{{ repo_dir }}"

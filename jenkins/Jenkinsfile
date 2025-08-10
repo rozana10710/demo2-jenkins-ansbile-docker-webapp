@@ -1,0 +1,19 @@
+pipeline {
+  agent { label 'slave' }
+
+  options {
+    timestamps()
+    ansiColor('xterm')
+  }
+
+  stages {
+    stage('Checkout') {
+      steps {
+        sshagent(credentials: ['github_ssh_key']) {
+          git branch: 'main', url: 'git@github.com:rozana10710/demo2-jenkins-ansbile-docker-webapp.git'
+        }
+        sh 'echo "Checked out commit:" && git log -1 --oneline || true'
+      }
+    }
+  }
+}
