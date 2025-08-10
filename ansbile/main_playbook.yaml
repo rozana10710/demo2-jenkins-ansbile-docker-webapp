@@ -1,8 +1,8 @@
 ---
 - name: Build, tag, push Docker image, and run container
   hosts: localhost
-  become: yes
-  become_method: sudo
+  become: false
+  gather_facts: false
   vars:
     docker_image_name: simple-web
     docker_tag: latest
