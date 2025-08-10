@@ -1,4 +1,5 @@
 ## Docker
+<img width="2940" height="1912" alt="image" src="https://github.com/user-attachments/assets/a466228e-6905-4efd-bfce-71c2c5585e6f" />
 
 Simple static web app served by a lightweight web server.
 
