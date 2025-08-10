@@ -1,4 +1,6 @@
 ## Jenkins
+<img width="2940" height="1658" alt="image" src="https://github.com/user-attachments/assets/41c92697-e0f7-4f58-a334-75f240043c90" />
+
 
 Declarative pipeline in `jenkins/Jenkinsfile`.
 
