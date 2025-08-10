@@ -1,0 +1,3 @@
+1. this is a full setup to spin up a master and slave for jenkins
+2. to connect, create a user called "jenkins" on the slave node,@master create the pub/private keypair using ssh-keygen, copy it to the slave node, make sure the ssh connection is established
+3. add MAVEN PLUGIN: Pipeline Maven IntegrationVersion,Maven_integration & Eclipse Temurin installer

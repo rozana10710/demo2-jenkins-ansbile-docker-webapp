@@ -1,0 +1,5 @@
+aws_region = "us-east-1"
+key_name = "demo1"
+master_ami = "ami-05f991c49d264708f" # set a valid AMI for your region
+slave_ami  = "ami-05f991c49d264708f"
+allowed_ssh_cidr = "0.0.0.0/0"
