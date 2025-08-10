@@ -14,6 +14,8 @@ Declarative pipeline in `jenkins/Jenkinsfile`.
 - Build & Push with Ansible: runs `ansbile/main_playbook.yaml`
 
 ### Parameters (set in Jenkins job)
+<img width="2688" height="768" alt="image" src="https://github.com/user-attachments/assets/36ccd4be-c518-4af2-889c-2967ba4d9efe" />
+
 - `DOCKERHUB_USERNAME` (string)
 - `DOCKERHUB_PASSWORD` (password)
 
