@@ -25,10 +25,12 @@
     - name: Ensure Docker is available
       command: docker --version
 
-    - name: Docker login to Docker Hub
-      command: >-
-        docker login -u {{ dockerhub_username }} -p {{ dockerhub_password }}
+    - name: Docker login to Docker Hub (stdin)
+      shell: |
+        echo "{{ dockerhub_password }}" | docker login -u "{{ dockerhub_username }}" --password-stdin
       no_log: true
+      args:
+        executable: /bin/bash
 
     - name: Build Docker image from Jenkins workspace docker directory
       command: >-
