@@ -39,6 +39,18 @@ install_on_ubuntu() {
   if [ -d /usr/lib/jvm/java-17-openjdk-amd64 ]; then
     sed -i -E "s|#?JAVA_HOME=.*|JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64|" /etc/default/jenkins || true
   fi
+
+  # Ensure Jenkins listens on all interfaces (not just 127.0.0.1)
+  if grep -q '^#\?HTTP_HOST=' /etc/default/jenkins; then
+    sed -i -E 's|^#?HTTP_HOST=.*|HTTP_HOST=0.0.0.0|' /etc/default/jenkins
+  else
+    echo 'HTTP_HOST=0.0.0.0' >> /etc/default/jenkins
+  fi
+  if grep -q '^#\?HTTP_PORT=' /etc/default/jenkins; then
+    sed -i -E 's|^#?HTTP_PORT=.*|HTTP_PORT=8080|' /etc/default/jenkins
+  else
+    echo 'HTTP_PORT=8080' >> /etc/default/jenkins
+  fi
 }
 
 install_on_ubuntu
