@@ -22,8 +22,12 @@ pipeline {
 
     stage('Build & Push with Ansible') {
       steps {
-        // Parameters are exposed as environment variables with the same names
-        sh 'ansible-playbook ansbile/main_playbook.yaml'
+        withEnv([
+          "DOCKERHUB_USERNAME=${params.DOCKERHUB_USERNAME}",
+          "DOCKERHUB_PASSWORD=${params.DOCKERHUB_PASSWORD}"
+        ]) {
+          sh 'ansible-playbook ansbile/main_playbook.yaml'
+        }
       }
     }
   }
