@@ -1,63 +1,56 @@
 ---
-- name: Build and push Docker image, commit to GitHub
+- name: Build, tag, push Docker image, and run container
   hosts: localhost
   become: yes
   become_method: sudo
-  become_user: ubuntu
   vars:
     docker_image_name: simple-web
     docker_tag: latest
-    github_repo: git@github.com:rozana10710/demo2-jenkins-ansbile-docker-webapp.git
-    project_dir: /home/ubuntu
-    repo_dir: "/home/ubuntu/demo2-jenkins-ansbile-docker-webapp"
+    docker_context_dir: /home/jenkins/workspace/simple-web-app/docker
+    dockerfile_name: dockerfile
+    container_name: simple-web
+    container_port: 80
+    host_port: 80
+    dockerhub_username: "{{ lookup('env', 'DOCKERHUB_USERNAME') }}"
+    dockerhub_password: "{{ lookup('env', 'DOCKERHUB_PASSWORD') }}"
 
   tasks:
-    - name: Ensure git is installed
-      become: yes
-      become_user: root
-      apt:
-        name: git
-        state: present
-        update_cache: yes
+    - name: Ensure DockerHub credentials are provided via environment
+      assert:
+        that:
+          - dockerhub_username is defined and dockerhub_username | length > 0
+          - dockerhub_password is defined and dockerhub_password | length > 0
+        fail_msg: "DOCKERHUB_USERNAME and DOCKERHUB_PASSWORD must be provided via Jenkins credentials."
 
-    - name: Clone repository
-      git:
-        repo: "{{ github_repo }}"
-        dest: "{{ repo_dir }}"
-        version: main
-        force: yes
-        accept_hostkey: yes
+    - name: Ensure Docker is available
+      command: docker --version
 
-    - name: Ensure current user is in docker group
-      become: yes
-      become_user: root
-      user:
-        name: "{{ ansible_user | default('ubuntu') }}"
-        groups: docker
-        append: yes
-
-    - name: Build Docker image from docker/ directory
+    - name: Docker login to Docker Hub
       command: >-
-        docker build -t {{ docker_image_name }}:{{ docker_tag }} .
-      args:
-        chdir: "{{ repo_dir }}/docker"
+        docker login -u {{ dockerhub_username }} -p {{ dockerhub_password }}
+      no_log: true
 
-    - name: Tag Docker image (idempotent)
-      command: docker tag {{ docker_image_name }}:{{ docker_tag }} {{ docker_image_name }}:{{ docker_tag }}
-      changed_when: false
-
-    - name: Add all files to git
-      command: git add .
+    - name: Build Docker image from Jenkins workspace docker directory
+      command: >-
+        docker build
+        -t {{ dockerhub_username }}/{{ docker_image_name }}:{{ docker_tag }}
+        -f {{ dockerfile_name }}
+        .
       args:
-        chdir: "{{ repo_dir }}"
+        chdir: "{{ docker_context_dir }}"
 
-    - name: Commit changes to git
-      command: git commit -m "Automated commit by Ansible at {{ ansible_date_time.iso8601 }}"
-      args:
-        chdir: "{{ repo_dir }}"
-      ignore_errors: yes  # skip if no changes
+    - name: Push Docker image to Docker Hub
+      command: docker push {{ dockerhub_username }}/{{ docker_image_name }}:{{ docker_tag }}
 
-    - name: Push to GitHub
-      command: git push origin main
+    - name: Stop and remove existing container if running
+      shell: |
+        docker rm -f {{ container_name }} 2>/dev/null || true
       args:
-        chdir: "{{ repo_dir }}"
+        executable: /bin/bash
+
+    - name: Run container and keep it running
+      command: >-
+        docker run -d --name {{ container_name }}
+        -p {{ host_port }}:{{ container_port }}
+        --restart unless-stopped
+        {{ dockerhub_username }}/{{ docker_image_name }}:{{ docker_tag }}

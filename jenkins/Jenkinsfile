@@ -5,6 +5,11 @@ pipeline {
     timestamps()
   }
 
+  parameters {
+    string(name: 'DOCKERHUB_USERNAME', defaultValue: '', description: 'Docker Hub username')
+    password(name: 'DOCKERHUB_PASSWORD', defaultValue: '', description: 'Docker Hub password or token')
+  }
+
   stages {
     stage('Checkout') {
       steps {
@@ -12,6 +17,13 @@ pipeline {
             credentialsId: 'github',
             url: 'https://github.com/rozana10710/demo2-jenkins-ansbile-docker-webapp.git'
         sh 'git log -1 --oneline || true'
+      }
+    }
+
+    stage('Build & Push with Ansible') {
+      steps {
+        // Parameters are exposed as environment variables with the same names
+        sh 'ansible-playbook ansbile/main_playbook.yaml'
       }
     }
   }
