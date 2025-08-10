@@ -1,6 +1,7 @@
 # Demo: Jenkins + Ansible + Docker Web App on AWS
 
 End-to-end demo that provisions AWS infra for Jenkins master/agent, builds a Docker image via Ansible from Jenkins, pushes to Docker Hub, and runs a simple web app.
+<img width="1942" height="1134" alt="image" src="https://github.com/user-attachments/assets/04996e18-fa33-42b0-ad35-173433fef7ca" />
 
 ## Architecture
 - Terraform (`infra/`): VPC, subnet, modular security groups, EC2 master + slave
