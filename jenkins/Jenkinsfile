@@ -9,7 +9,7 @@ pipeline {
     stage('Checkout') {
       steps {
         sshagent(credentials: ['github']) {
-          git branch: 'main', url: 'git@github.com:rozana10710/demo2-jenkins-ansbile-docker-webapp.git'
+          git branch: 'master', url: 'git@github.com:rozana10710/demo2-jenkins-ansbile-docker-webapp.git'
         }
         sh 'echo "Checked out commit:" && git log -1 --oneline || true'
       }
