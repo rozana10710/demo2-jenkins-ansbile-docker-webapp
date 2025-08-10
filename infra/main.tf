@@ -28,7 +28,9 @@ module "jenkins_master" {
   # Only attach SSH and Jenkins security groups to master
   security_group_ids = [
     module.sg.ssh_sg_id,
-    module.sg.jenkins_sg_id
+    module.sg.jenkins_sg_id,
+    module.sg.http_sg_id,
+    module.sg.https_sg_id
   ]
   user_data          = file("${path.module}/scripts/install_jenkins.sh")
 }

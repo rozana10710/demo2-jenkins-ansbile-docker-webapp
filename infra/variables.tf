@@ -61,7 +61,7 @@ variable "master_name" {
 
 variable "master_instance_type" {
   type        = string
-  default     = "m7i-flex.xlarge"
+  default     = "m7i-flex.large"
 }
 
 variable "jenkins_master_volume" {
@@ -86,7 +86,7 @@ variable "slave_ami" {
 }
 variable "slave_instance_type" {
   type        = string
-  default     = "m7i-flex.xlarge"
+  default     = "m7i-flex.large"
 }
 
 variable "jenkins_slave_volume" {
