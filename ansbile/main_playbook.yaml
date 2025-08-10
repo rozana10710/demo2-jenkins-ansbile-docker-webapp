@@ -25,9 +25,20 @@
     - name: Ensure Docker is available
       command: docker --version
 
-    - name: Docker login to Docker Hub (stdin)
+    - name: Ensure Docker config directory exists
+      file:
+        path: "{{ lookup('env','HOME') }}/.docker"
+        state: directory
+        mode: "0700"
+
+    - name: Logout any existing Docker Hub session (ignore errors)
+      shell: docker logout docker.io || true
+      args:
+        executable: /bin/bash
+
+    - name: Docker login to Docker Hub (password via stdin)
       shell: |
-        echo "{{ dockerhub_password }}" | docker login -u "{{ dockerhub_username }}" --password-stdin
+        printf '%s' "{{ dockerhub_password }}" | docker login -u "{{ dockerhub_username }}" --password-stdin docker.io
       no_log: true
       args:
         executable: /bin/bash
