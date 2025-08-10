@@ -9,9 +9,12 @@ module "vpc" {
 module "sg" {
   source = "./modules/security_group"
   vpc_id = module.vpc.vpc_id
+  name_prefix = var.sg_name_prefix
+  # CIDR blocks for each security group
   allowed_ssh_cidr = var.allowed_ssh_cidr
   allowed_jenkins_cidr = var.allowed_jenkins_cidr
-  name = var.sg_name
+  allowed_http_cidr = var.allowed_http_cidr
+  allowed_https_cidr = var.allowed_https_cidr
 }
 
 module "jenkins_master" {
@@ -22,7 +25,11 @@ module "jenkins_master" {
   subnet_id = module.vpc.public_subnet_id
   key_name  = var.key_name
   volume_size        = var.jenkins_master_volume
-  security_group_ids = [module.sg.sg_id]
+  # Only attach SSH and Jenkins security groups to master
+  security_group_ids = [
+    module.sg.ssh_sg_id,
+    module.sg.jenkins_sg_id
+  ]
   user_data          = file("${path.module}/scripts/install_jenkins.sh")
 }
 
@@ -34,6 +41,11 @@ module "jenkins_slave" {
   subnet_id = module.vpc.public_subnet_id
   key_name  = var.key_name
   volume_size        = var.jenkins_slave_volume
-  security_group_ids = [module.sg.sg_id]
+  # Attach SSH, HTTP, and HTTPS security groups to slave
+  security_group_ids = [
+    module.sg.ssh_sg_id,
+    module.sg.http_sg_id,
+    module.sg.https_sg_id
+  ]
   user_data          = file("${path.module}/scripts/setup_slave.sh")
 }

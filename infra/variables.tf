@@ -29,9 +29,24 @@ variable "allowed_jenkins_cidr" {
   type        = string
   default     = "0.0.0.0/0"
 }
+variable "allowed_http_cidr" {
+  type        = string
+  description = "CIDR block allowed for HTTP access"
+  default     = "0.0.0.0/0"
+}
+variable "allowed_https_cidr" {
+  type        = string
+  description = "CIDR block allowed for HTTPS access"
+  default     = "0.0.0.0/0"
+}
 variable "sg_name" {
   type        = string
   default     = "jenkins-sg"
+}
+variable "sg_name_prefix" {
+  type        = string
+  description = "Prefix for security group names"
+  default     = "jenkins"
 }
 #___________KEY PAIR___________
 variable "key_name" {
@@ -77,5 +92,5 @@ variable "slave_instance_type" {
 variable "jenkins_slave_volume" {
   description = "Root volume size (GB) for Jenkins slave"
   type        = number
-  default     = 50
+  default     = 100
 }

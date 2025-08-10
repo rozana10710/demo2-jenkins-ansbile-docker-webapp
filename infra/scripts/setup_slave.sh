@@ -1,28 +1,62 @@
 #!/bin/bash
-set -e
+set -euxo pipefail
 
-# Change hostname to MASTER
 hostnamectl set-hostname SLAVE
 echo "SLAVE" >> /etc/hosts
 
-# Update packages
+export DEBIAN_FRONTEND=noninteractive
+
+# Update and upgrade base system
 apt-get update -y
+apt-get upgrade -y
 
+# Base utilities and prerequisites
+apt-get install -y \
+  software-properties-common \
+  apt-transport-https \
+  ca-certificates \
+  curl \
+  gnupg \
+  lsb-release
 
+# Install OpenJDK 17 (for Jenkins agent)
+apt-get install -y openjdk-17-jdk
 
-echo "Updating system packages..."
-sudo apt update && sudo apt upgrade -y
+# Install Ansible
+add-apt-repository --yes --update ppa:ansible/ansible
+apt-get update -y
+apt-get install -y ansible
 
-sudo apt install -y openjdk-17-jdk
+# Install Docker CE
+install -d -m 0755 /etc/apt/keyrings
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+chmod a+r /etc/apt/keyrings/docker.gpg
 
-echo "Installing dependencies..."
-sudo apt install software-properties-common -y
+CODENAME="$(lsb_release -cs)"
+ARCHITECTURE="$(dpkg --print-architecture)"
 
-echo "Adding Ansible PPA..."
-sudo add-apt-repository --yes --update ppa:ansible/ansible
+echo "deb [arch=${ARCHITECTURE} signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu ${CODENAME} stable" > /etc/apt/sources.list.d/docker.list
 
-echo "Installing Ansible..."
-sudo apt install ansible -y
+apt-get update -y
+apt-get install -y docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
 
-echo "Ansible installation complete."
-ansible --version
+# Enable and start services
+systemctl enable docker
+systemctl start docker
+# Ensure SSH server is enabled and running (usually present on cloud images)
+if systemctl list-unit-files | grep -q '^ssh\.service'; then
+  systemctl enable ssh || true
+  systemctl restart ssh || true
+fi
+
+# Add default login user to docker group (UID 1000 or fallback to ubuntu)
+DEFAULT_USER="$(getent passwd 1000 | cut -d: -f1 || true)"
+if [ -z "$DEFAULT_USER" ]; then
+  DEFAULT_USER="ubuntu"
+fi
+usermod -aG docker "$DEFAULT_USER" || true
+
+# Print versions for diagnostics
+java -version || true
+ansible --version || true
+docker --version || true
