@@ -1,4 +1,6 @@
 ## Infrastructure (Terraform)
+<img width="2928" height="642" alt="image" src="https://github.com/user-attachments/assets/d9729d16-f03f-45a5-87d8-a1eb58cef25c" />
+
 
 This folder provisions AWS infrastructure for the demo Jenkins + Ansible + Docker web app.
 
